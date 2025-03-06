@@ -45,3 +45,5 @@ const routes = (handler) => [
         handler: handler.deleteSongByIdHandler
     }
 ];
+
+module.exports = routes;
