@@ -1,9 +1,11 @@
 class MusicHandler {
-    constructor(service) {
-        this._service = service
+    constructor(service, validator) {
+        this._service = service;
+        this._validator = validator;
     }
 
     postAlbumHandler(request, h) {
+        this._validator.validateAlbumPayload(request.payload);
         const { name, year } = request.payload;
         const response = h.response({
             status: 'success',
@@ -42,6 +44,7 @@ class MusicHandler {
     }
 
     postSongsHandler(request, h) {
+        this._validator.validateSongPayload(request.payload);
         const { title, year, genre, performer, duration, albumId } = request.payload;
         const response = h.response({
             status: 'success',
@@ -73,6 +76,7 @@ class MusicHandler {
     }
 
     putSongByIdHandler(request) {
+        this._validator.validateSongPayload(request.payload);
         const { id } = request.params;
         const { title, year, genre, performer, duration, albumId } = request.payload;
         return {
@@ -89,3 +93,5 @@ class MusicHandler {
         };
     }
 }
+
+module.exports = MusicHandler;
