@@ -15,10 +15,10 @@ const init = async () => {
                 origin: ['*'],
             }
         }
-    })
+    });
 
     await server.register({
-        plugins: music, 
+        plugin: music, 
         options: {
             service: musicService,
             validator: MusicValidator,
@@ -27,6 +27,10 @@ const init = async () => {
 
     server.ext('onPreResponse', (request, h) => {
         const { response } = request;
+
+        if (response.isBoom) {
+            console.error('Request Error: ', response);
+        }
 
         if (response instanceof ClientError) {
             const newResponse = h.response({

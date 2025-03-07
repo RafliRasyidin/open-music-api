@@ -19,14 +19,14 @@ exports.up = (pgm) => {
             notNull: true,
         },
         year: {
-            type: 'VARCHAR(4)',
+            type: 'INTEGER',
             notNull: true
         },
-        createdAt: {
+        created_at: {
             type: 'TEXT',
             notNull: true
         },
-        updatedAt: {
+        updated_at: {
             type: 'TEXT',
             notNull: true
         },
@@ -42,7 +42,7 @@ exports.up = (pgm) => {
             notNull: true,
         },
         year: {
-            type: 'VARCHAR(4)',
+            type: 'INTEGER',
             notNull: true,
         },
         performer: {
@@ -57,15 +57,15 @@ exports.up = (pgm) => {
             type: 'INTEGER',
             notNull: false,
         },
-        albumId: {
+        album_id: {
             type: 'VARCHAR(50)',
             notNull: false,
         },
-        createdAt: {
+        created_at: {
             type: 'TEXT',
             notNull: true
         },
-        updatedAt: {
+        updated_at: {
             type: 'TEXT',
             notNull: true
         }
@@ -78,5 +78,6 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-    
+    pgm.dropTable('album');
+    pgm.dropTable('song');
 };

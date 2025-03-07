@@ -2,7 +2,7 @@ const { nanoid } = require("nanoid");
 const { Pool } = require("pg");
 const InvariantError = require("../../exceptions/InvariantError");
 const NotFoundError = require("../../exceptions/NotFoundError");
-const { mapAlbumDBToModel, mapSongDBToModel } = require("../../utils");
+const { mapSongDbToSongs, mapSongDBToModel } = require("../../utils");
 
 class MusicService {
     constructor() {
@@ -39,10 +39,10 @@ class MusicService {
         const album = result.rows[0];
 
         const queryAlbum = {
-            text: 'SELECT id, title, performer FROM song WHERE albumId = $1',
+            text: 'SELECT id, title, performer FROM song WHERE album_id = $1',
             values: [id]
         }
-        const songsResult = await this._pool.query(query);
+        const songsResult = await this._pool.query(queryAlbum);
         const songs = songsResult.rows;
 
         const finalResult = {
@@ -57,7 +57,7 @@ class MusicService {
     async editAlbumById(id, { name, year }) {
         const updatedAt = new Date().toISOString();
         const query = {
-            text: 'UPDATE album SET name = $1, year = $2, updatedAt = $3, WHERE id = $4, RETURNING $id',
+            text: 'UPDATE album SET name = $1, year = $2, updated_at = $3 WHERE id = $4 RETURNING id',
             values: [name, year, updatedAt, id],
         };
         const result = await this._pool.query(query);
@@ -69,7 +69,7 @@ class MusicService {
 
     async deleteAlbumById(id) {
         const query = {
-            text: 'DELETE FROM album WHERE id = $1 RETURNING $id',
+            text: 'DELETE FROM album WHERE id = $1 RETURNING id',
             values: [id],
         };
         const result = await this._pool.query(query);
@@ -84,8 +84,8 @@ class MusicService {
         const updatedAt = createdAt;
 
         const query = {
-            text: 'INSERT INTO song VALUES($1 $2 $3 $4 $5 $6 $7 $8 $9) RETURNING id',
-            values: [id, title, year, genre, performer, duration, albumId, createdAt, updatedAt]
+            text: 'INSERT INTO song VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+            values: [id, title, year, performer, genre, duration, albumId, createdAt, updatedAt]
         };
 
         const result = await this._pool.query(query);
@@ -97,23 +97,21 @@ class MusicService {
     }
 
     async getSongs({title, performer}) {
-        const title = title;
-        const performer = performer;
         const query = {
-            text: 'SELECT * FROM song WHERE title ILIKE $1 OR performer $2',
-            values: ['%${title}%', '%${performer}%']
-        };
+            text: 'SELECT * FROM song WHERE title LIKE $1 OR performer LIKE $2',
+            values: [`%${title}%`, `%${performer}%`]
+          };
         const result = await this._pool.query(query);
-        return result.rows.map(mapSongDBToModel);
+        return result.rows.map(mapSongDbToSongs);
     }
 
     async getSongById(id) {
         const query = {
-            text: 'SELECT * FROM song WHERE id = $1 RETURNING id',
+            text: 'SELECT * FROM song WHERE id = $1',
             values: [id]
         };
         const result = await this._pool.query(query);
-        if (!result.rows[0].id) {
+        if (!result.rows.length) {
             throw new NotFoundError('Lagu tidak ditemukan')
         }
         return result.rows.map(mapSongDBToModel)[0];
@@ -122,7 +120,7 @@ class MusicService {
     async editSongById(id, {title, year, genre, performer, duration, albumId}) {
         const updatedAt = new Date().toISOString();
         const query = {
-            text: 'UPDATE song SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, albumId = $6, updatedAt = $7 WHERE id = $id RETURNING id',
+            text: 'UPDATE song SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, album_id = $6, updated_at = $7 WHERE id = $8 RETURNING id',
             values: [title, year, genre, performer, duration, albumId, updatedAt, id]
         };
         const result = await this._pool.query(query);

@@ -16,11 +16,11 @@ class MusicHandler {
 
     async postAlbumHandler(request, h) {
         this._validator.validateAlbumPayload(request.payload);
-        const albumId = await this._service.postAlbum(request.payload);
+        const albumId = await this._service.addAlbum(request.payload);
         const response = h.response({
             status: 'success',
             data: {
-                album_id: albumId,
+                albumId: albumId,
             },
         });
         response.code(201);
@@ -39,8 +39,9 @@ class MusicHandler {
     }
 
     async putAlbumByIdHandler(request) {
+        this._validator.validateAlbumPayload(request.payload);
         const { id } = request.params;
-        await this._service.editAlbumById(id)
+        await this._service.editAlbumById(id, request.payload);
         return {
             status: 'success',
             message: 'Berhasil edit album',
@@ -70,7 +71,7 @@ class MusicHandler {
     }
 
     async getSongsHandler(request) {
-        const { title = '', performer = ''} = request.query;
+        const { title = '', performer = '' } = request.query;
         const songs = await this._service.getSongs({title, performer});
         return {
             status: 'success',
@@ -101,7 +102,7 @@ class MusicHandler {
         }
     }
 
-    async deleteSongByIdHandler() {
+    async deleteSongByIdHandler(request) {
         const { id } = request.params;
         await this._service.deleteSongById(id);
         return {
