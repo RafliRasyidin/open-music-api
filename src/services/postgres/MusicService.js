@@ -84,8 +84,8 @@ class MusicService {
         const updatedAt = createdAt;
 
         const query = {
-            text: 'INSERT INTO song VALUES($1 $2 $3 $4 $5 $6 $7) RETURNING id',
-            values: [id, title, year, genre, performer, duration, albumId]
+            text: 'INSERT INTO song VALUES($1 $2 $3 $4 $5 $6 $7 $8 $9) RETURNING id',
+            values: [id, title, year, genre, performer, duration, albumId, createdAt, updatedAt]
         };
 
         const result = await this._pool.query(query);
