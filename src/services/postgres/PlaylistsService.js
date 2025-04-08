@@ -11,7 +11,7 @@ class PlaylistsService {
     this._songsService = songsService;
   }
 
-  async postPlaylist({ name, owner }) {
+  async postPlaylist(name, owner) {
     const id = `playlist-${nanoid(16)}`;
     const query = {
       text: 'INSERT INTO playlists VALUES($1, $2, $3) RETURNING id',
@@ -64,7 +64,7 @@ class PlaylistsService {
 
   async getPlaylistById(id) {
     const queryPlaylist = {
-      text: `SELECT id, name, username WHERE id = $1`,
+      text: `SELECT id, name, owner FROM playlists WHERE id = $1`,
       values: [id],
     };
     const resultPlaylist = await this._pool.query(queryPlaylist);
@@ -73,8 +73,8 @@ class PlaylistsService {
     }
 
     const querySongsJoinPlaylist = {
-      text: `SELECT s.id, s.title, s.performer FROM songs s
-                LEFT JOIN playlist_songs ps ON ps.song_id = s.id
+      text: `SELECT s.id, s.title, s.performer FROM song s
+                LEFT JOIN playlists_songs ps ON ps.song_id = s.id
                 WHERE ps.playlist_id = $1
                 GROUP BY s.id`,
       values: [id],
@@ -94,10 +94,10 @@ class PlaylistsService {
 
   async postSongToPlaylist(playlistId, songId) {
     await this._songsService.getSongById(songId);
-
+    const id = `playlist-songs-${nanoid(16)}`;
     const query = {
-      text: 'INSERT INTO playlist_songs VALUES($1, $2) RETURNING id',
-      values: [playlistId, songId],
+      text: 'INSERT INTO playlists_songs VALUES($1, $2, $3) RETURNING id',
+      values: [id, playlistId, songId],
     };
     const result = await this._pool.query(query);
     if (!result.rows.length) {
@@ -107,7 +107,7 @@ class PlaylistsService {
 
   async deleteSongFromPlaylist(playlistId, songId) {
     const query = {
-      text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
+      text: 'DELETE FROM playlists_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
       values: [playlistId, songId],
     };
     const result = await this._pool.query(query);

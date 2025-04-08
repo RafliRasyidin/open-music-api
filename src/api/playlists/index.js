@@ -1,4 +1,3 @@
-const { name } = require('../authentications');
 const PlaylistsHandler = require('./handler');
 const routes = require('./routes');
 
