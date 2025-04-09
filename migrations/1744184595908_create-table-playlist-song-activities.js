@@ -11,8 +11,12 @@ exports.shorthands = undefined;
 exports.up = (pgm) => {
   pgm.createTable('playlist_song_activities', {
     id: {
-      type: 'VARCHAR(50)',
+      type: 'INTEGER',
       primaryKey: true,
+      notNull: true,
+      sequenceGenerated: {
+        precedence: 'ALWAYS',
+      },
     },
     playlist_id: {
       type: 'VARCHAR(50)',
