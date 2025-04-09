@@ -1,18 +1,29 @@
 /* eslint-disable no-underscore-dangle */
 class CollaborationsHandler {
-  constructor(collaborationsService, playlistsService, validator) {
+  constructor(
+    collaborationsService,
+    playlistsService,
+    usersService,
+    validator
+  ) {
     this._collaborationsService = collaborationsService;
     this._playlistsService = playlistsService;
+    this._usersService = usersService;
     this._validator = validator;
+
+    this.postCollaborationHandler = this.postCollaborationHandler.bind(this);
+    this.deleteCollaborationHandler =
+      this.deleteCollaborationHandler.bind(this);
   }
 
   async postCollaborationHandler(request, h) {
     this._validator.validatePostCollaborationsPayload(request.payload);
 
     const { playlistId, userId } = request.payload;
-    const { id: credentialId } = request.auth.request;
+    const { id: credentialId } = request.auth.credentials;
 
-    await this._playlistsService.verifyAccess(playlistId, credentialId);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
+    await this._usersService.verifyUser(userId);
     const collaborationId = await this._collaborationsService.addCollaborations(
       playlistId,
       userId
@@ -32,9 +43,10 @@ class CollaborationsHandler {
     this._validator.validateDeleteCollaborationsPayload(request.payload);
 
     const { playlistId, userId } = request.payload;
-    const { id: credentialId } = request.auth.request;
+    const { id: credentialId } = request.auth.credentials;
 
-    await this._playlistsService.verifyAccess(playlistId, credentialId);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
+    await this._usersService.verifyUser(userId);
     await this._collaborationsService.deleteCollaborations(playlistId, userId);
     const response = h.response({
       status: 'success',
