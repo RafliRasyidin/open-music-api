@@ -1,10 +1,11 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-underscore-dangle */
 class PlaylistsHandler {
-  constructor(playlistService, songsService, validator) {
+  constructor(playlistService, songsService, playlistSongActivities, validator) {
     this._playlistService = playlistService;
     this._songsService = songsService;
     this._validator = validator;
+    this._playlistSongActivities = playlistSongActivities;
 
     this.postPlaylistHandler = this.postPlaylistHandler.bind(this);
     this.getPlaylistsHandler = this.getPlaylistsHandler.bind(this);
@@ -12,6 +13,7 @@ class PlaylistsHandler {
     this.postSongToPlaylistHandler = this.postSongToPlaylistHandler.bind(this);
     this.getSongsInPlaylistHandler = this.getSongsInPlaylistHandler.bind(this);
     this.deleteSongFromPlaylistHandler = this.deleteSongFromPlaylistHandler.bind(this);
+    this.getPlaylistActivitiesHandler = this.getPlaylistActivitiesHandler.bind(this);
   }
 
   async postPlaylistHandler(request, h) {
@@ -67,6 +69,12 @@ class PlaylistsHandler {
     await this._songsService.getSongById(songId);
     await this._playlistService.verifyPlaylistAccess(id, credentialId);
     await this._playlistService.postSongToPlaylist(id, songId);
+    await this._playlistSongActivities.addActivity(
+      id,
+      songId,
+      credentialId,
+      'add'
+    )
 
     const response = h.response({
       status: 'success',
@@ -101,10 +109,33 @@ class PlaylistsHandler {
 
     await this._playlistService.verifyPlaylistAccess(id, credentialId);
     await this._playlistService.deleteSongFromPlaylist(id, songId);
+    await this._playlistSongActivities.addActivity(
+      id,
+      songId,
+      credentialId,
+      'delete'
+    )
 
     const response = h.response({
       status: 'success',
       message: 'Lagu berhasil dihapus dari playlist',
+    })
+    return response;
+  }
+
+  async getPlaylistActivitiesHandler(request, h) {
+    const { id } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+
+    await this._playlistService.verifyPlaylistAccess(id, credentialId);
+    const activities = await this._playlistSongActivities.getActivities(id);
+
+    const response = h.response({
+      status: 'success',
+      data: {
+        playlistId: id,
+        activities,
+      }
     })
     return response;
   }
