@@ -31,11 +31,14 @@ const CollaborationsValidator = require('./validator/collaborations');
 
 const init = async () => {
   const songsService = new SongsService();
+  const collaborationsService = new CollaborationsService();
   const albumService = new AlbumService(songsService);
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
-  const playlistService = new PlaylistService(songsService);
-  const collaborationsService = new CollaborationsService();
+  const playlistService = new PlaylistService(
+    songsService,
+    collaborationsService
+  );
 
   const server = Hapi.server({
     port: process.env.PORT,
