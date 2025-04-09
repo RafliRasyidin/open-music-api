@@ -43,3 +43,5 @@ class CollaborationsHandler {
     return response;
   }
 }
+
+module.exports = CollaborationsHandler;
